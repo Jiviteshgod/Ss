@@ -1,0 +1,139 @@
+// Define some constants
+var WIDTH = canvas.width;
+var HEIGHT = canvas.height;
+var SQUARE_SIZE = 20;
+var CIRCLE_SIZE = 10;
+var CIRCLE_SPEED = 2;
+var CIRCLE_COUNT = 10;
+
+// Define the game objects
+var square = {
+  x: WIDTH / 2 - SQUARE_SIZE / 2,
+  y: HEIGHT / 2 - SQUARE_SIZE / 2,
+  color: "blue",
+  update: function() {
+    // Move the square according to the arrow keys
+    if (keys[37]) { // left
+      this.x -= 5;
+    }
+    if (keys[38]) { // up
+      this.y -= 5;
+    }
+    if (keys[39]) { // right
+      this.x += 5;
+    }
+    if (keys[40]) { // down
+      this.y += 5;
+    }
+    // Keep the square within the canvas boundaries
+    this.x = Math.max(0, Math.min(WIDTH - SQUARE_SIZE, this.x));
+    this.y = Math.max(0, Math.min(HEIGHT - SQUARE_SIZE, this.y));
+  },
+  draw: function() {
+    // Draw the square on the canvas
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, SQUARE_SIZE, SQUARE_SIZE);
+  }
+};
+
+var circles = [];
+for (var i = 0; i < CIRCLE_COUNT; i++) {
+  // Create a random circle
+  var circle = {
+    x: Math.random() * WIDTH,
+    y: Math.random() * HEIGHT,
+    dx: Math.random() * CIRCLE_SPEED * 2 - CIRCLE_SPEED,
+    dy: Math.random() * CIRCLE_SPEED * 2 - CIRCLE_SPEED,
+    color: "red",
+    update: function() {
+      // Move the circle according to its velocity
+      this.x += this.dx;
+      this.y += this.dy;
+      // Bounce the circle off the canvas edges
+      if (this.x < 0 || this.x > WIDTH - CIRCLE_SIZE) {
+        this.dx = -this.dx;
+      }
+      if (this.y < 0 || this.y > HEIGHT - CIRCLE_SIZE) {
+        this.dy = -this.dy;
+      }
+    },
+    draw: function() {
+      // Draw the circle on the canvas
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x + CIRCLE_SIZE / 2, this.y + CIRCLE_SIZE / 2, CIRCLE_SIZE / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+  // Add the circle to the array
+  circles.push(circle);
+}
+
+// Define a variable to store the pressed keys
+var keys = {};
+
+// Define a function to handle keydown events
+function keydown(e) {
+  // Set the pressed key to true
+  keys[e.keyCode] = true;
+}
+
+// Define a function to handle keyup events
+function keyup(e) {
+  // Set the released key to false
+  keys[e.keyCode] = false;
+}
+
+// Define a function to check for collisions
+function collide(a, b) {
+  // Check if the two rectangles overlap
+  return a.x < b.x + CIRCLE_SIZE &&
+         a.x + SQUARE_SIZE > b.x &&
+         a.y < b.y + CIRCLE_SIZE &&
+         a.y + SQUARE_SIZE > b.y;
+}
+
+// Define a function to update the game state
+function update() {
+  // Update the square and the circles
+  square.update();
+  for (var i = 0; i < circles.length; i++) {
+    circles[i].update();
+  }
+  // Check for collisions
+  for (var i = 0; i < circles.length; i++) {
+    if (collide(square, circles[i])) {
+      // Game over
+      alert("Game over!");
+      // Reload the page
+      location.reload();
+    }
+  }
+}
+
+// Define a function to draw the game scene
+function draw() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  // Draw the square and the circles
+  square.draw();
+  for (var i = 0; i < circles.length; i++) {
+    circles[i].draw();
+  }
+}
+
+// Define a function to run the game loop
+function loop() {
+  // Update and draw the game
+  update();
+  draw();
+  // Request the next frame
+  requestAnimationFrame(loop);
+}
+
+// Add event listeners for the keyboard
+window.addEventListener("keydown", keydown);
+window.addEventListener("keyup", keyup);
+
+// Start the game loop
+loop();
